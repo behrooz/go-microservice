@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -51,6 +52,7 @@ func (a *App) initializeRoutes() {
 	a.Router.HandleFunc("/person", a.getPersons).Methods("GET")
 	a.Router.HandleFunc("/person", a.addPerson).Methods("POST")
 	a.Router.HandleFunc("/person", a.updatePerson).Methods("PATCH")
+	a.Router.HandleFunc("/person/{id}", a.deletePerson).Methods("DELETE")
 }
 
 func ResponseWithError(w http.ResponseWriter, code int, message string) {
@@ -99,4 +101,21 @@ func (a *App) updatePerson(w http.ResponseWriter, r *http.Request) {
 
 	ResponseWithJson(w, 200, result)
 
+}
+
+func (a *App) deletePerson(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	id := vars["id"]
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		ResponseWithError(w, 400, "Invalid ID")
+		return
+	}
+	err = deletePerson(a.DB, idInt)
+	if err != nil {
+		ResponseWithError(w, 500, err.Error())
+		return
+	}
+	ResponseWithJson(w, 200, "ok")
 }

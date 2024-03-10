@@ -52,3 +52,17 @@ func updatePerson(db *gorm.DB, person *Persons) (*Persons, error) {
 	return person, nil
 
 }
+
+func deletePerson(db *gorm.DB, id int) error {
+
+	var p Persons
+	p.ID = uint(id)
+
+	result := db.Delete(&p)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
