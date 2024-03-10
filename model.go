@@ -11,6 +11,9 @@ type Persons struct {
 	FirstName string
 	Address   string
 	City      string
+	Username  string
+	Password  string
+	email     string
 }
 
 func addPerson(db *gorm.DB, person *Persons) error {
@@ -34,4 +37,15 @@ func getPersons(db *gorm.DB) ([]Persons, error) {
 	}
 
 	return persons, nil
+}
+
+func updatePerson(db *gorm.DB, person *Persons) (*Persons, error) {
+
+	result := db.Model(&person).Where("id = ?", person.ID).Updates(person)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return person, nil
+
 }

@@ -50,6 +50,7 @@ func (a *App) initializeRoutes() {
 
 	a.Router.HandleFunc("/person", a.getPersons).Methods("GET")
 	a.Router.HandleFunc("/person", a.addPerson).Methods("POST")
+	a.Router.HandleFunc("/person", a.updatePerson).Methods("PATCH")
 }
 
 func ResponseWithError(w http.ResponseWriter, code int, message string) {
@@ -81,4 +82,21 @@ func (a *App) getPersons(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ResponseWithJson(w, 200, result)
+}
+
+func (a *App) updatePerson(w http.ResponseWriter, r *http.Request) {
+
+	var p Persons
+	err := json.NewDecoder(r.Body).Decode(&p)
+	if err != nil {
+		ResponseWithError(w, 500, err.Error())
+	}
+
+	result, err := updatePerson(a.DB, &p)
+	if err != nil {
+		ResponseWithError(w, 500, err.Error())
+	}
+
+	ResponseWithJson(w, 200, result)
+
 }
