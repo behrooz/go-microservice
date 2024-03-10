@@ -41,7 +41,10 @@ func getPersons(db *gorm.DB) ([]Persons, error) {
 
 func updatePerson(db *gorm.DB, person *Persons) (*Persons, error) {
 
-	result := db.Model(&person).Where("id = ?", person.ID).Updates(person)
+	var p Persons
+	p.ID = person.ID
+
+	result := db.Model(&p).Where("id = ?", person.ID).Updates(person)
 	if result.Error != nil {
 		return nil, result.Error
 	}
