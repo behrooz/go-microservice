@@ -1,4 +1,4 @@
-package main
+package model
 
 import (
 	"gorm.io/gorm"
@@ -16,7 +16,7 @@ type Persons struct {
 	email     string
 }
 
-func addPerson(db *gorm.DB, person *Persons) error {
+func AddPerson(db *gorm.DB, person *Persons) error {
 
 	//fmt.Printf("%+v\n", person)
 	p := db.Create(&person)
@@ -27,7 +27,7 @@ func addPerson(db *gorm.DB, person *Persons) error {
 	return nil
 }
 
-func getPersons(db *gorm.DB) ([]Persons, error) {
+func GetPersons(db *gorm.DB) ([]Persons, error) {
 
 	var persons []Persons
 	result := db.Find(&persons)
@@ -39,7 +39,7 @@ func getPersons(db *gorm.DB) ([]Persons, error) {
 	return persons, nil
 }
 
-func updatePerson(db *gorm.DB, person *Persons) (*Persons, error) {
+func UpdatePerson(db *gorm.DB, person *Persons) (*Persons, error) {
 
 	var p Persons
 	p.ID = person.ID
@@ -53,7 +53,7 @@ func updatePerson(db *gorm.DB, person *Persons) (*Persons, error) {
 
 }
 
-func deletePerson(db *gorm.DB, id int) error {
+func DeletePerson(db *gorm.DB, id int) error {
 
 	var p Persons
 	p.ID = uint(id)
