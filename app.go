@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+
+	"main/model"
 	"net/http"
 	"strconv"
 
@@ -33,7 +35,7 @@ func (a *App) Initialize(username, password, dbname string) {
 	dns = fmt.Sprintf("%s:%s@tcp(localhost:3306)/%s?charset=utf8mb4&parseTime=True&loc=Local", username, password, dbname)
 	db, err = gorm.Open(mysql.Open(dns), &gorm.Config{})
 
-	db.AutoMigrate(&Persons{})
+	db.AutoMigrate(&model.Persons{})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -69,16 +71,16 @@ func ResponseWithJson(w http.ResponseWriter, code int, payload interface{}) {
 
 func (a *App) addPerson(w http.ResponseWriter, r *http.Request) {
 
-	var p Persons
+	var p model.Persons
 	err := json.NewDecoder(r.Body).Decode(&p)
-	addPerson(a.DB, &p)
+	model.AddPerson(a.DB, &p)
 	if err != nil {
 		ResponseWithJson(w, 500, map[string]string{"error": err.Error()})
 	}
 }
 
 func (a *App) getPersons(w http.ResponseWriter, r *http.Request) {
-	result, err := getPersons(a.DB)
+	result, err := model.GetPersons(a.DB)
 	if err != nil {
 		ResponseWithError(w, 500, err.Error())
 	}
@@ -88,13 +90,13 @@ func (a *App) getPersons(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) updatePerson(w http.ResponseWriter, r *http.Request) {
 
-	var p Persons
+	var p model.Persons
 	err := json.NewDecoder(r.Body).Decode(&p)
 	if err != nil {
 		ResponseWithError(w, 500, err.Error())
 	}
 
-	result, err := updatePerson(a.DB, &p)
+	result, err := model.UpdatePerson(a.DB, &p)
 	if err != nil {
 		ResponseWithError(w, 500, err.Error())
 	}
@@ -112,7 +114,7 @@ func (a *App) deletePerson(w http.ResponseWriter, r *http.Request) {
 		ResponseWithError(w, 400, "Invalid ID")
 		return
 	}
-	err = deletePerson(a.DB, idInt)
+	err = model.DeletePerson(a.DB, idInt)
 	if err != nil {
 		ResponseWithError(w, 500, err.Error())
 		return
