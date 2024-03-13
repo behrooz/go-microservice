@@ -55,6 +55,8 @@ func (a *App) initializeRoutes() {
 	a.Router.HandleFunc("/person", a.addPerson).Methods("POST")
 	a.Router.HandleFunc("/person", a.updatePerson).Methods("PATCH")
 	a.Router.HandleFunc("/person/{id}", a.deletePerson).Methods("DELETE")
+
+	a.Router.HandleFunc("/register", a.register).Methods("POST")
 }
 
 func ResponseWithError(w http.ResponseWriter, code int, message string) {
@@ -119,5 +121,22 @@ func (a *App) deletePerson(w http.ResponseWriter, r *http.Request) {
 		ResponseWithError(w, 500, err.Error())
 		return
 	}
+	ResponseWithJson(w, 200, "ok")
+}
+
+func (a *App) register(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	username := vars["username"]
+	password := vars["password"]
+	email := vars["email"]
+
+	err := model.Register(a.DB, username, password, email)
+
+	if err != nil {
+		ResponseWithError(w, 500, err.Error())
+		return
+	}
+
 	ResponseWithJson(w, 200, "ok")
 }

@@ -1,6 +1,10 @@
 package model
 
 import (
+	"fmt"
+	"log"
+
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -65,4 +69,26 @@ func DeletePerson(db *gorm.DB, id int) error {
 	}
 
 	return nil
+}
+
+func Register(db *gorm.DB, username, password, email string) error {
+	var u Persons
+	u.Username = username
+	u.Password = password
+	u.email = email
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	fmt.Printf("hash: %v\n", hash)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var single_user Persons
+
+	db.Find(&single_user, "username =?", username)
+
+	fmt.Printf("user: %v\n", single_user)
+
+	return nil
+
 }
