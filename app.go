@@ -4,16 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"main/model"
 	"net/http"
 	"strconv"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"github.com/golang-jwt/jwt/v5"
 )
 
 type App struct {
@@ -60,6 +61,7 @@ func (a *App) initializeRoutes() {
 	a.Router.HandleFunc("/person/{id}", a.deletePerson).Methods("DELETE")
 
 	a.Router.HandleFunc("/register", a.register).Methods("POST")
+	a.Router.HandleFunc("/login", a.login).Methods("POST")
 }
 
 func ResponseWithError(w http.ResponseWriter, code int, message string) {
@@ -131,9 +133,9 @@ func (a *App) register(w http.ResponseWriter, r *http.Request) {
 
 	var u model.Register
 
-	err := json.NewDecoder(r.Body).Decode(&u)
+	_ = json.NewDecoder(r.Body).Decode(&u)
 
-	_, err = model.Registeration(a.DB, &u)
+	_, err := model.Registeration(a.DB, &u)
 
 	if err != nil {
 		ResponseWithError(w, 500, err.Error())
@@ -146,34 +148,41 @@ func (a *App) register(w http.ResponseWriter, r *http.Request) {
 func (a *App) login(w http.ResponseWriter, r *http.Request) {
 	var u model.Register
 
-	err := json.NewDecoder(r.Body).Decode(&u)
+	_ = json.NewDecoder(r.Body).Decode(&u)
+	err := model.Login(a.DB, &u)
+	if u.Username != "" {
+		result, e := createToken(u.Username)
+		if e.Error() != "" {
+			ResponseWithJson(w, 200, result)
+		}
+	}
+
 	if err != nil {
 		ResponseWithError(w, 500, err.Error())
 	}
 }
 
-
-func createToken(username string)(string, error){
+func createToken(username string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
 			"username": username,
-			"exp": time.Now().Add(time.Hour * 24).Unix(),
+			"exp":      time.Now().Add(time.Hour * 24).Unix(),
 		})
 
-	tokenString, err := token.SigningString(secretKey)	
-	if err !=nil {
+	tokenString, err := token.SignedString(secretKey)
+	if err != nil {
 		return "", err
 	}
 
 	return tokenString, nil
 }
 
-func verifyToken(tokenString string) error{
-	tokenm err := jwt.Parse(tokenString, func(token *jwt.Token))(interface{}, error {
+func verifyToken(tokenString string) error {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return secretKey, nil
 	})
 
-	if err !=nil {
+	if err != nil {
 		return err
 	}
 

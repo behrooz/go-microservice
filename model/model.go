@@ -25,10 +25,6 @@ type Register struct {
 	Email    string
 }
 
-type token struct {
-	token string
-}
-
 func AddPerson(db *gorm.DB, person *Persons) error {
 
 	//fmt.Printf("%+v\n", person)
@@ -108,18 +104,18 @@ func Registeration(db *gorm.DB, user *Register) (Persons, error) {
 
 }
 
-func login(db *gorm.DB, user *Register) (token, error) {
+func Login(db *gorm.DB, user *Register) error {
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var single_user Persons
-
-	db.Find(&single_user, "username =?", user.Username)
-	if single_user.Username != "" {
-		return token{}, nil
+	db.Where(map[string]interface{}{"username": user.Username, "password": hash}).Find(&user)
+	if user.Username != "" {
+		return nil
 	}
+
+	return nil
 
 }
