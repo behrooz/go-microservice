@@ -20,6 +20,12 @@ type Persons struct {
 	email     string
 }
 
+type Register struct {
+	Username string
+	Password string
+	Email    string
+}
+
 func AddPerson(db *gorm.DB, person *Persons) error {
 
 	//fmt.Printf("%+v\n", person)
@@ -71,13 +77,9 @@ func DeletePerson(db *gorm.DB, id int) error {
 	return nil
 }
 
-func Register(db *gorm.DB, username, password, email string) error {
-	var u Persons
-	u.Username = username
-	u.Password = password
-	u.email = email
+func Registeration(db *gorm.DB, user *Register) (Persons, error) {
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	fmt.Printf("hash: %v\n", hash)
 	if err != nil {
 		log.Fatal(err)
@@ -85,10 +87,21 @@ func Register(db *gorm.DB, username, password, email string) error {
 
 	var single_user Persons
 
-	db.Find(&single_user, "username =?", username)
+	db.Find(&single_user, "username =?", user.Username)
+	if single_user.Username != "" {
+		return single_user, nil
+	}
 
-	fmt.Printf("user: %v\n", single_user)
+	single_user.Password = string(hash)
+	single_user.Username = user.Username
+	single_user.email = user.Email
 
-	return nil
+	r := db.Create(&single_user)
+	single_user.Password = "******"
+	if r.Error != nil {
+		return single_user, r.Error
+	}
+	single_user.Password = "******"
+	return single_user, nil
 
 }

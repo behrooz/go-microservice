@@ -126,12 +126,11 @@ func (a *App) deletePerson(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) register(w http.ResponseWriter, r *http.Request) {
 
-	vars := mux.Vars(r)
-	username := vars["username"]
-	password := vars["password"]
-	email := vars["email"]
+	var u model.Register
 
-	err := model.Register(a.DB, username, password, email)
+	err := json.NewDecoder(r.Body).Decode(&u)
+
+	_, err = model.Registeration(a.DB, &u)
 
 	if err != nil {
 		ResponseWithError(w, 500, err.Error())
