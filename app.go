@@ -13,12 +13,15 @@ import (
 	_ "github.com/lib/pq"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type App struct {
 	Router *mux.Router
 	DB     *gorm.DB
 }
+
+var secretKey = []byte("eyforShipApplication!@#@!")
 
 func (a *App) Initialize(username, password, dbname string) {
 
@@ -147,4 +150,36 @@ func (a *App) login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		ResponseWithError(w, 500, err.Error())
 	}
+}
+
+
+func createToken(username string)(string, error){
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
+		jwt.MapClaims{
+			"username": username,
+			"exp": time.Now().Add(time.Hour * 24).Unix(),
+		})
+
+	tokenString, err := token.SigningString(secretKey)	
+	if err !=nil {
+		return "", err
+	}
+
+	return tokenString, nil
+}
+
+func verifyToken(tokenString string) error{
+	tokenm err := jwt.Parse(tokenString, func(token *jwt.Token))(interface{}, error {
+		return secretKey, nil
+	})
+
+	if err !=nil {
+		return err
+	}
+
+	if !token.Valid {
+		return fmt.Errorf("invalid token")
+	}
+
+	return nil
 }
