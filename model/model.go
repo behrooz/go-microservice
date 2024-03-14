@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"log"
 
 	"golang.org/x/crypto/bcrypt"
@@ -24,6 +23,10 @@ type Register struct {
 	Username string
 	Password string
 	Email    string
+}
+
+type token struct {
+	token string
 }
 
 func AddPerson(db *gorm.DB, person *Persons) error {
@@ -80,7 +83,6 @@ func DeletePerson(db *gorm.DB, id int) error {
 func Registeration(db *gorm.DB, user *Register) (Persons, error) {
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-	fmt.Printf("hash: %v\n", hash)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -97,11 +99,27 @@ func Registeration(db *gorm.DB, user *Register) (Persons, error) {
 	single_user.email = user.Email
 
 	r := db.Create(&single_user)
-	single_user.Password = "******"
+	single_user.Password = "***"
 	if r.Error != nil {
 		return single_user, r.Error
 	}
-	single_user.Password = "******"
+	single_user.Password = "***"
 	return single_user, nil
+
+}
+
+func login(db *gorm.DB, user *Register) (token, error) {
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var single_user Persons
+
+	db.Find(&single_user, "username =?", user.Username)
+	if single_user.Username != "" {
+		return token{}, nil
+	}
 
 }

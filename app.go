@@ -139,3 +139,12 @@ func (a *App) register(w http.ResponseWriter, r *http.Request) {
 
 	ResponseWithJson(w, 200, "ok")
 }
+
+func (a *App) login(w http.ResponseWriter, r *http.Request) {
+	var u model.Register
+
+	err := json.NewDecoder(r.Body).Decode(&u)
+	if err != nil {
+		ResponseWithError(w, 500, err.Error())
+	}
+}
