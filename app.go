@@ -149,12 +149,10 @@ func (a *App) login(w http.ResponseWriter, r *http.Request) {
 	var u model.Register
 
 	_ = json.NewDecoder(r.Body).Decode(&u)
-	err := model.Login(a.DB, &u)
-	if u.Username != "" {
-		result, e := createToken(u.Username)
-		if e.Error() != "" {
-			ResponseWithJson(w, 200, result)
-		}
+	result, err := model.Login(a.DB, &u)
+	if result.Username != "" {
+		result, _ := createToken(u.Username)
+		ResponseWithJson(w, 200, result)
 	}
 
 	if err != nil {

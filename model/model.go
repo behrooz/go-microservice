@@ -104,7 +104,7 @@ func Registeration(db *gorm.DB, user *Register) (Persons, error) {
 
 }
 
-func Login(db *gorm.DB, user *Register) error {
+func Login(db *gorm.DB, user *Register) (*Register, error) {
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -113,9 +113,9 @@ func Login(db *gorm.DB, user *Register) error {
 
 	db.Where(map[string]interface{}{"username": user.Username, "password": hash}).Find(&user)
 	if user.Username != "" {
-		return nil
+		return user, nil
 	}
 
-	return nil
+	return nil, nil
 
 }
