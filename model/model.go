@@ -25,6 +25,11 @@ type Register struct {
 	Email    string
 }
 
+type LoginToken struct {
+	Username string `json:"username"`
+	Token    string `json:"token"`
+}
+
 func AddPerson(db *gorm.DB, person *Persons) error {
 
 	//fmt.Printf("%+v\n", person)

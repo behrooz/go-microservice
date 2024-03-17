@@ -148,11 +148,34 @@ func (a *App) register(w http.ResponseWriter, r *http.Request) {
 func (a *App) login(w http.ResponseWriter, r *http.Request) {
 	var u model.Register
 
-	_ = json.NewDecoder(r.Body).Decode(&u)
+	err := json.NewDecoder(r.Body).Decode(&u)
+
+	if err != nil {
+		ResponseWithError(w, 500, err.Error())
+		return
+	}
+
+	if u.Username == "" || u.Password == "" {
+		ResponseWithError(w, 500, "Invalid Credentials")
+		return
+	}
+
 	result, err := model.Login(a.DB, &u)
+
+	if err != nil {
+		ResponseWithError(w, 500, err.Error())
+		return
+	}
+
 	if result.Username != "" {
 		result, _ := createToken(u.Username)
-		ResponseWithJson(w, 200, result)
+
+		item := model.LoginToken{
+			Username: u.Username,
+			Token:    result,
+		}
+
+		ResponseWithJson(w, 200, &item)
 	}
 
 	if err != nil {
