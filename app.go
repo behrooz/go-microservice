@@ -151,7 +151,7 @@ func (a *App) login(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&u)
 
 	if err != nil {
-		ResponseWithError(w, 500, err.Error())
+		ResponseWithError(w, 500, "Missing Credentials")
 		return
 	}
 
