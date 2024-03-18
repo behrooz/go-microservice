@@ -33,6 +33,7 @@ func Execute() {
 
 func addSubCommandPaletts() {
 	rootCmd.AddCommand(user.UserCmd)
+	rootCmd.AddCommand(user.LoginCmd)
 }
 
 func init() {
