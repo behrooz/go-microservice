@@ -4,7 +4,7 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package user
 
 import (
-	"encoding/json"
+	"bytes"
 	"fmt"
 	"net/http"
 
@@ -23,16 +23,23 @@ type loginobj struct {
 }
 
 func login(username, password, host string) {
-	url := "http://" + host + "login"
-	data := loginobj{}
-	data.username = username
-	data.password = password
-	json, _ := json.Unmarshal(data)
-	Client := &http.Client{}
-	r, _ := http.NewRequest(http.MethodPost, url)
-	r.Header.Set("Content-Type", "application/json")
+	url := "http://" + host + "/login"
 
-	resp, _ := Client.Do(r)
+	body := []byte(`{
+		"username": ` + username + `,
+		"password" : ` + password + `
+	}`)
+	fmt.Println(username, password, host)
+	r, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body))
+	if err != nil {
+		panic(err.Error())
+	}
+
+	r.Header.Add("Content-Type", "application/json")
+	client := &http.Client{}
+	resp, err := client.Do(r)
+	defer resp.Body.Close()
+
 	fmt.Println(resp.Status)
 	fmt.Println(resp.Body)
 
