@@ -5,6 +5,7 @@ package user
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -18,30 +19,36 @@ var (
 )
 
 type loginobj struct {
-	username string
-	password string
+	Username string
+	Password string
 }
 
 func login(username, password, host string) {
 	url := "http://" + host + "/login"
 
-	body := []byte(`{
-		"username": ` + username + `,
-		"password" : ` + password + `
-	}`)
+	login := loginobj{
+		Username: username,
+		Password: password,
+	}
+
+	jsonBody, err := json.Marshal(login)
+	if err != nil {
+		fmt.Println("Error marshalling json", err)
+	}
+
 	fmt.Println(username, password, host)
-	r, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body))
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonBody))
 	if err != nil {
 		panic(err.Error())
 	}
 
-	r.Header.Add("Content-Type", "application/json")
-	client := &http.Client{}
-	resp, err := client.Do(r)
 	defer resp.Body.Close()
 
-	fmt.Println(resp.Status)
-	fmt.Println(resp.Body)
+	if resp.StatusCode == http.StatusOK {
+		fmt.Println("login successful")
+	} else {
+		fmt.Println("login failed with status code:", resp.StatusCode)
+	}
 
 }
 
@@ -51,6 +58,7 @@ var LoginCmd = &cobra.Command{
 	Short: "Login to server with username and apssword",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
+
 		login(username, password, host)
 	},
 }
