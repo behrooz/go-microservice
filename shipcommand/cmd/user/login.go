@@ -65,7 +65,7 @@ func saveToken(token string) {
 	os.MkdirAll(shipDir, 0755)
 
 	content := []byte(token)
-	err := os.WriteFile(shipDir+"token", content, 0644)
+	err := os.WriteFile(shipDir+"/"+"token", content, 0644)
 	if err != nil {
 		fmt.Println("Error with saving token", err)
 	}
