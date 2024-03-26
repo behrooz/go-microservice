@@ -7,7 +7,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -36,20 +39,36 @@ func login(username, password, host string) {
 		fmt.Println("Error marshalling json", err)
 	}
 
-	fmt.Println(username, password, host)
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonBody))
 	if err != nil {
 		panic(err.Error())
 	}
 
 	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading reponse body", err)
+	}
 
 	if resp.StatusCode == http.StatusOK {
-		fmt.Println("login successful")
+		fmt.Println("login successful", string(body))
+		saveToken(string(body))
 	} else {
 		fmt.Println("login failed with status code:", resp.StatusCode)
 	}
 
+}
+
+func saveToken(token string) {
+	homedir, _ := os.UserHomeDir()
+	shipDir := filepath.Join(homedir, ".ship")
+	os.MkdirAll(shipDir, 0755)
+
+	content := []byte(token)
+	err := os.WriteFile(shipDir+"token", content, 0644)
+	if err != nil {
+		fmt.Println("Error with saving token", err)
+	}
 }
 
 // loginCmd represents the login command
